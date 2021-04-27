@@ -13,6 +13,7 @@ function getLocation() {
     }
 }
 
+
 function showPosition(position) {
     coordsNumbers.innerHTML = "Latitude: " + position.coords.latitude +
         "<br>Longitude: " + position.coords.longitude;
@@ -24,17 +25,7 @@ function showPosition(position) {
 
 function initMap() {
     console.log("initMap");
-    const map = new google.maps.Map(mapElement, {
-        zoom: 16,
-        center: {
-            lat: -34.397,
-            lng: 150.644
-        },
-    });
-    const geocoder = new google.maps.Geocoder();
-    document.getElementById("submit").addEventListener("click", () => {
-        geocodeAddress(geocoder, map);
-    });
+
 }
 
 
@@ -62,19 +53,25 @@ function displayOnMap(_coords) {
 // geocoding address 
 
 
-function geocodeAddress(geocoder, resultsMap) {
+function getLocationFromAddress() {
+    console.log("getLocationFromAddress");
     const address = document.getElementById("address").value;
+    geocodeAddress(address);
+}
+
+function geocodeAddress(_address) {
+    const geocoder = new google.maps.Geocoder();
     geocoder.geocode({
-        address: address
+        address: _address
     }, (results, status) => {
         if (status === "OK") {
-            resultsMap.setCenter(results[0].geometry.location);
-            new google.maps.Marker({
-                map: resultsMap,
-                position: results[0].geometry.location,
-            });
 
-            // displayOnMap(results[0].geometry.location)
+            const _location = {
+                latitude: results[0].geometry.location.lat(),
+                longitude: results[0].geometry.location.lng(),
+            }
+            console.log("_location:", _location);
+            displayOnMap(_location)
         } else {
             alert("Geocode was not successful for the following reason: " + status);
         }
