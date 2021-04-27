@@ -1,5 +1,8 @@
+// Define the html elements
 var coordsNumbers = document.getElementById("coordsNumbers");
 var addressText = document.getElementById("addressText");
+var mapElement = document.getElementById("googleMapSection");
+// Define the html elements end
 
 function getLocation() {
     if (navigator.geolocation) {
@@ -20,7 +23,8 @@ function showPosition(position) {
 }
 
 function initMap() {
-    const map = new google.maps.Map(document.getElementById("googleMap"), {
+    console.log("initMap");
+    const map = new google.maps.Map(mapElement, {
         zoom: 16,
         center: {
             lat: -34.397,
@@ -44,8 +48,7 @@ function displayOnMap(_coords) {
         lng: _longitude
     };
 
-    // var webMap = new google.maps.Map(document.getElementById("googleMap"), mapProp);
-    const map = new google.maps.Map(document.getElementById("googleMap"), {
+    const map = new google.maps.Map(mapElement, {
         zoom: 16,
         center: myLatLng,
     });
@@ -58,10 +61,6 @@ function displayOnMap(_coords) {
 
 // geocoding address 
 
-document.getElementById("submit").addEventListener("click", () => {
-    geocodeAddress(geocoder, map);
-
-});
 
 function geocodeAddress(geocoder, resultsMap) {
     const address = document.getElementById("address").value;
