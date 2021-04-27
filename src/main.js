@@ -1,4 +1,5 @@
 var coordsNumbers = document.getElementById("coordsNumbers");
+var addressText = document.getElementById("addressText");
 
 function getLocation() {
     if (navigator.geolocation) {
@@ -12,7 +13,10 @@ function getLocation() {
 function showPosition(position) {
     coordsNumbers.innerHTML = "Latitude: " + position.coords.latitude +
         "<br>Longitude: " + position.coords.longitude;
-    myMap(position.coords)
+    displayOnMap(position.coords)
+    getAddress(position.coords)
+
+
 }
 
 function initMap() {
@@ -30,10 +34,10 @@ function initMap() {
 }
 
 
-function myMap(_coords) {
+function displayOnMap(_coords) {
 
-    var _latitude = (_coords && _coords.latitude) ? _coords.latitude : 43.642567
-    var _longitude = (_coords && _coords.longitude) ? _coords.longitude : -79.387054
+    const _latitude = (_coords && _coords.latitude) ? _coords.latitude : 43.642567
+    const _longitude = (_coords && _coords.longitude) ? _coords.longitude : -79.387054
 
     const myLatLng = {
         lat: _latitude,
@@ -52,8 +56,7 @@ function myMap(_coords) {
     });
 }
 
-// geocoding address
-const geocoder = new google.maps.Geocoder();
+// geocoding address 
 
 document.getElementById("submit").addEventListener("click", () => {
     geocodeAddress(geocoder, map);
@@ -72,9 +75,39 @@ function geocodeAddress(geocoder, resultsMap) {
                 position: results[0].geometry.location,
             });
 
-            // myMap(results[0].geometry.location)
+            // displayOnMap(results[0].geometry.location)
         } else {
             alert("Geocode was not successful for the following reason: " + status);
         }
     });
+}
+
+function getAddress(_coords) {
+
+    const _latitude = _coords.latitude;
+    const _longitude = _coords.longitude;
+
+    const myLatLng = {
+        lat: _latitude,
+        lng: _longitude
+    };
+
+    const geocoder = new google.maps.Geocoder();
+    geocoder.geocode({
+        location: myLatLng
+    }, (results, status) => {
+        if (status === "OK") {
+            if (results[0]) {
+                console.log("results[0].formatted_address:", results[0].formatted_address)
+
+                addressText.innerHTML = "Address: " + results[0].formatted_address;
+
+            } else {
+                window.alert("No results found");
+            }
+        } else {
+            window.alert("Geocoder failed due to: " + status);
+        }
+    });
+
 }
