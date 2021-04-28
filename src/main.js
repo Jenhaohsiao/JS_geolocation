@@ -3,6 +3,11 @@ var coordsNumbers = document.getElementById("coordsNumbers");
 var addressText = document.getElementById("addressText");
 var mapElement = document.getElementById("googleMapSection");
 var realTimeElement = document.getElementById("realTimeElement");
+var autoLocateSection = document.getElementById("auto-locate-section");
+var inputAddressSection = document.getElementById("input-address-section");
+var infoSection = document.getElementById("info-section");
+var loadingSection = document.getElementById("loading-section");
+
 var submitButton = document.getElementById("address");
 var googleApikey = 'AIzaSyAdKvswD4AjeyYWt7WseQjQ35w5DX2ZAfY';
 var _latitude = null;
@@ -11,6 +16,7 @@ var offsets = null;
 // Define the html elements and global parameters end
 // Define functions
 var vm = this;
+vm.selectOpt = selectOpt;
 vm.getLocation = getLocation;
 vm.showPosition = showPosition;
 vm.getInfoSectionData = getInfoSectionData;
@@ -25,7 +31,34 @@ vm.getTimeRuning = getTimeRuning;
 // Define functions
 // ====================================================================================
 
+selectOpt();
+
+function selectOpt(_opt) {
+    initInfoSection();
+
+    switch (_opt) {
+        case 'optAutoRadio':
+
+            inputAddressSection.style.display = "none";
+            autoLocateSection.style.display = "inline";
+
+            break;
+        case 'optInputRadio':
+            inputAddressSection.style.display = "inline";
+            autoLocateSection.style.display = "none";
+
+            break;
+
+        default:
+            inputAddressSection.style.display = "none";
+            autoLocateSection.style.display = "none";
+            break;
+    }
+}
+
 function getLocation() {
+    loadingSection.style.display = "inline";
+
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(showPosition); //Get current positon and display 
     } else {
@@ -53,8 +86,7 @@ function displayCoordText() {
 
 
 function displayOnMap() {
-    initInfoSection();
-
+    infoSection.style.display = "inline";
     const myLatLng = {
         lat: _latitude,
         lng: _longitude
@@ -68,13 +100,18 @@ function displayOnMap() {
         position: myLatLng,
         map
     });
+
+    inputAddressSection.style.display = "none";
+    autoLocateSection.style.display = "none";
+
     const _timeZoneLoc = _latitude + "," + _longitude;
     getRealTime(_timeZoneLoc);
 }
 
 function getLocationFromAddress() {
+    loadingSection.style.display = "inline";
     const address = submitButton.value;
-    geocodeAddress(address);
+    setTimeout(() => geocodeAddress(address), 500);
 }
 
 function geocodeAddress(_address) {
@@ -118,8 +155,15 @@ function getAddressText() {
 }
 
 function initInfoSection() {
+    loadingSection.style.display = "none";
+    clearInterval(getTimeRuning);
+    infoSection.style.display = "none";
     addressText.innerHTML = null;
     coordsNumbers.innerHTML = null;
+    realTimeElement.innerHTML = null;
+    // _latitude = null;
+    // _longitude = null;
+    // offsets = null;
 }
 
 function getRealTime(_loc) {
@@ -135,7 +179,7 @@ function getRealTime(_loc) {
             var output = JSON.parse(xhr.responseText)
             if (output.status == 'OK') {
                 offsets = output.dstOffset * 1000 + output.rawOffset * 1000
-
+                loadingSection.style.display = "none";
                 setInterval(() => getTimeRuning(), 1000);
             }
         } else {
@@ -149,7 +193,6 @@ function getRealTime(_loc) {
 
 function getTimeRuning() {
 
-    console.log("startTime")
     var targetDate = new Date()
     var timestamp = targetDate.getTime() / 1000 + targetDate.getTimezoneOffset() * 60;
     var localdate = new Date(timestamp * 1000 + offsets) //
