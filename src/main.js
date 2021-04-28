@@ -1,48 +1,59 @@
-// Define the html elements
+// Define the elements and global parameters
 var coordsNumbers = document.getElementById("coordsNumbers");
 var addressText = document.getElementById("addressText");
 var mapElement = document.getElementById("googleMapSection");
-var timeZoneOffset = document.getElementById("timeZoneOffset");
+var realTimeElement = document.getElementById("realTimeElement");
 var submitButton = document.getElementById("address");
-// Define the html elements end
-
 var googleApikey = 'AIzaSyAdKvswD4AjeyYWt7WseQjQ35w5DX2ZAfY';
 var _latitude = null;
 var _longitude = null;
 var offsets = null;
+// Define the html elements and global parameters end
+// Define functions
+var vm = this;
+vm.getLocation = getLocation;
+vm.showPosition = showPosition;
+vm.getInfoSectionData = getInfoSectionData;
+vm.displayCoordText = displayCoordText;
+vm.displayOnMap = displayOnMap;
+vm.getLocationFromAddress = getLocationFromAddress;
+vm.geocodeAddress = geocodeAddress;
+vm.getAddressText = getAddressText;
+vm.initInfoSection = initInfoSection;
+vm.getRealTime = getRealTime;
+vm.getTimeRuning = getTimeRuning;
+// Define functions
+// ====================================================================================
 
 function getLocation() {
-
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(showPosition);
-
+        navigator.geolocation.getCurrentPosition(showPosition); //Get current positon and display 
     } else {
         coordsNumbers.innerHTML = "Geolocation is not supported by this browser.";
     }
 }
 
-
 function showPosition(position) {
 
-    displayOnMap(position.coords)
-    coordsNumbers.innerHTML = "Latitude: " + position.coords.latitude +
-        "<br>Longitude: " + position.coords.longitude;
-    getAddress(position.coords)
-
-
+    _latitude = position.coords.latitude;
+    _longitude = position.coords.longitude;
+    getInfoSectionData();
 }
 
-function initMap() {
+function getInfoSectionData() {
+    displayOnMap();
+    displayCoordText();
+    getAddressText();
+}
 
-    console.log("initMap");
-
+function displayCoordText() {
+    coordsNumbers.innerHTML = "Latitude: " + _latitude +
+        "<br>Longitude: " + _longitude;
 }
 
 
-function displayOnMap(_coords) {
+function displayOnMap() {
     initInfoSection();
-    _latitude = (_coords && _coords.latitude) ? _coords.latitude : 43.642567
-    _longitude = (_coords && _coords.longitude) ? _coords.longitude : -79.387054
 
     const myLatLng = {
         lat: _latitude,
@@ -55,20 +66,13 @@ function displayOnMap(_coords) {
     });
     new google.maps.Marker({
         position: myLatLng,
-        map,
-        title: "Hello World!",
+        map
     });
-
     const _timeZoneLoc = _latitude + "," + _longitude;
-
-    getTimeZone(_timeZoneLoc);
+    getRealTime(_timeZoneLoc);
 }
 
-// geocoding address 
-
-
 function getLocationFromAddress() {
-    console.log("getLocationFromAddress");
     const address = submitButton.value;
     geocodeAddress(address);
 }
@@ -79,24 +83,17 @@ function geocodeAddress(_address) {
         address: _address
     }, (results, status) => {
         if (status === "OK") {
+            _latitude = results[0].geometry.location.lat();
+            _longitude = results[0].geometry.location.lng();
 
-            const _location = {
-                latitude: results[0].geometry.location.lat(),
-                longitude: results[0].geometry.location.lng(),
-            }
-            // console.log("_location:", _location);
-            displayOnMap(_location)
+            getInfoSectionData();
         } else {
             alert("Geocode was not successful for the following reason: " + status);
         }
     });
 }
 
-function getAddress(_coords) {
-
-    const _latitude = _coords.latitude;
-    const _longitude = _coords.longitude;
-
+function getAddressText() {
     const myLatLng = {
         lat: _latitude,
         lng: _longitude
@@ -108,8 +105,6 @@ function getAddress(_coords) {
     }, (results, status) => {
         if (status === "OK") {
             if (results[0]) {
-                // console.log("results[0].formatted_address:", results[0].formatted_address)
-
                 addressText.innerHTML = "Address: " + results[0].formatted_address;
 
             } else {
@@ -122,31 +117,26 @@ function getAddress(_coords) {
 
 }
 
-function initInfoSection(_loc) {
-    // todo : init all and renew
+function initInfoSection() {
     addressText.innerHTML = null;
     coordsNumbers.innerHTML = null;
 }
 
-function getTimeZone(_loc) {
+function getRealTime(_loc) {
 
     var targetDate = new Date()
     var timestamp = targetDate.getTime() / 1000 + targetDate.getTimezoneOffset() * 60 // Current UTC date/time expressed as seconds since midnight, January 1, 1970 UTC
-    var apicall = 'https://maps.googleapis.com/maps/api/timezone/json?location=' + _loc + '&timestamp=' + timestamp + '&key=' + googleApikey
+    var apicall = 'https://maps.googleapis.com/maps/api/timezone/json?location=' + _loc + '&timestamp=' + timestamp + '&key=' + googleApikey;
 
-    var xhr = new XMLHttpRequest() // create new XMLHttpRequest2 object
-    xhr.open('GET', apicall) // open GET request
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', apicall)
     xhr.onload = function () {
-        if (xhr.status === 200) { // if Ajax request successful
-            var output = JSON.parse(xhr.responseText) // convert returned JSON string to JSON object
-            console.log(output.status) // log API return status for debugging purposes
-            if (output.status == 'OK') { // if API reports everything was returned successfully
-                offsets = output.dstOffset * 1000 + output.rawOffset * 1000 // get DST and time zone offsets in milliseconds
-                var localdate = new Date(timestamp * 1000 + offsets) // Date object containing current time of Tokyo (timestamp + dstOffset + rawOffset)
-                console.log("getTimeZone:", localdate.toLocaleString()) // Display current Tokyo date and time
-                timeZoneOffset.innerHTML = "The Curret Time for this location: " + localdate.toLocaleString();
+        if (xhr.status === 200) {
+            var output = JSON.parse(xhr.responseText)
+            if (output.status == 'OK') {
+                offsets = output.dstOffset * 1000 + output.rawOffset * 1000
 
-                setInterval(() => startTime(), 1000);
+                setInterval(() => getTimeRuning(), 1000);
             }
         } else {
             alert('Request failed.  Returned status of ' + xhr.status)
@@ -157,11 +147,11 @@ function getTimeZone(_loc) {
 
 }
 
-function startTime() {
+function getTimeRuning() {
 
     console.log("startTime")
     var targetDate = new Date()
     var timestamp = targetDate.getTime() / 1000 + targetDate.getTimezoneOffset() * 60;
     var localdate = new Date(timestamp * 1000 + offsets) //
-    timeZoneOffset.innerHTML = "The Curret Time for this location: " + localdate.toLocaleString();
+    realTimeElement.innerHTML = "The Curret Time for this location: " + localdate.toLocaleString();
 }

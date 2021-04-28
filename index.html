@@ -23,19 +23,19 @@
 
     <h3>Your Coordinates</h3>
 
-    <button onclick="getLocation()">Locate Me Automatically</button>
+    <button onclick="vm.getLocation()">Locate Me Automatically</button>
     <div id="floating-panel">
         <h4>Input your address here</h4>
         <input id="address" type="textbox" value="Sydney, NSW" />
         <!-- <input id="submit" type="button" value="Geocode" /> -->
 
     </div>
-    <button onclick="getLocationFromAddress()">Get Location From Address</button>
+    <button onclick="vm.getLocationFromAddress()">Get Location From Address</button>
 
     <!-- Info section -->
     <p id="coordsNumbers"></p>
     <p id="addressText"></p>
-    <p id="timeZoneOffset"></p>
+    <p id="realTimeElement"></p>
     <!-- Info section end-->
 
 
@@ -61,8 +61,7 @@
     <!-- ======Script For BootScript--end============================================================================================= -->
 
     </script>
-    <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdKvswD4AjeyYWt7WseQjQ35w5DX2ZAfY&callback=initMap"
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdKvswD4AjeyYWt7WseQjQ35w5DX2ZAfY"
         type="text/javascript">
     </script>
     <script src="SRC/main.js"></script>
